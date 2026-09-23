@@ -1,0 +1,17 @@
+[user]
+    name = Jeremiah Kellick
+    email = jeremiah@jeremiahkellick.com
+[core]
+    excludesfile = ~/.gitignore
+    editor = nvim
+[push]
+    default = simple
+    autoSetupRemote = true
+[color]
+    ui = auto
+[merge]
+    conflictstyle = diff3
+[pull]
+    rebase = true
+[init]
+    defaultBranch = main

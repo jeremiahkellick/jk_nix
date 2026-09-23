@@ -1,0 +1,17 @@
+BasedOnStyle: LLVM
+
+AlignAfterOpenBracket: DontAlign
+AlignEscapedNewlines: Left
+AlignOperands: DontAlign
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: WithoutElse
+BinPackArguments: false
+BinPackParameters: false
+BracedInitializerIndentWidth: 4
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Attach
+ColumnLimit: 100
+ContinuationIndentWidth: 8
+IndentPPDirectives: None
+IndentWidth: 4
+TabWidth: 4
