@@ -17,6 +17,8 @@
     home = { pkgs, lib, ... }: {
       home.stateVersion = "26.05";
 
+      nix.settings.experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+
       home.packages = with pkgs; [
         alacritty
         clang-tools
@@ -29,10 +31,14 @@
         wl-clipboard
       ];
 
+      programs.bash = {
+        enable = true;
+        bashrcExtra = builtins.readFile ./files/.bashrc;
+        profileExtra = builtins.readFile ./files/.profile;
+      };
+
       home.file = {
         ".alacritty.toml".source = ./files/.alacritty.toml;
-        ".bash_profile".source = ./files/.bash_profile;
-        ".bashrc".source = ./files/.bashrc;
         ".clang-format".source = ./files/.clang-format;
         ".git-completion.bash".source = ./files/.git-completion.bash;
         ".git-prompt.sh".source = ./files/.git-prompt.sh;
@@ -73,6 +79,13 @@
           vim-tmux-navigator
           vim-unimpaired
         ];
+      };
+
+      services.ssh-agent.enable = true;
+      programs.ssh = {
+        enable = true;
+        enableDefaultConfig = false;
+        settings."*".AddKeysToAgent = "yes";
       };
 
       # Synchronize passwords.kdbx
@@ -117,6 +130,7 @@
       ];
 
       nix.settings.experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+
       nixpkgs.config.allowUnfree = true;
 
       boot.loader.systemd-boot.enable = lib.mkDefault true;

@@ -1,3 +1,7 @@
+[terminal.shell]
+program = "bash"
+args = ["--login"]
+
 [font]
 size = 12.0
 
