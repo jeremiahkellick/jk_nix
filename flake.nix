@@ -14,10 +14,25 @@
   };
 
   outputs = { nixpkgs, lanzaboote, home-manager, ... }: let
-    home = { pkgs, lib, ... }: {
+    experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+
+    home = { pkgs, lib, ... }: let
+      passwordsSync = pkgs.writeShellScript "passwords-sync" ''
+        set -euo pipefail
+        args=(
+          googledrive: "$HOME" --include "/passwords.kdbx" --resilient --recover --max-lock 2m
+          --conflict-resolve newer --verbose
+        )
+        if [ ! -e "$HOME/passwords.kdbx" ]; then
+          args=(--resync "''${args[@]}")
+        fi
+        exec ${pkgs.rclone}/bin/rclone bisync "''${args[@]}"
+      '';
+    in {
       home.stateVersion = "26.05";
 
-      nix.settings.experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+      nix.package = lib.mkDefault pkgs.nix;
+      nix.settings.experimental-features = lib.mkDefault experimental-features;
 
       home.packages = with pkgs; [
         alacritty
@@ -81,7 +96,6 @@
         ];
       };
 
-      services.ssh-agent.enable = true;
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;
@@ -98,10 +112,7 @@
         Service = {
           Type = "oneshot";
           EnvironmentFile = "%h/secrets.env";
-          ExecStart = ''
-            ${pkgs.rclone}/bin/rclone bisync googledrive: %h --include "/passwords.kdbx" \
-	        --resilient --recover --max-lock 2m --conflict-resolve newer --verbose
-          '';
+          ExecStart = "${passwordsSync}";
         };
       };
       systemd.user.timers.passwordssync = {
@@ -114,9 +125,7 @@
         config = {
           ProgramArguments = [
             "/bin/sh" "-c"
-            ''set -a; . "$HOME/secrets.env"; set +a; exec \
-	          ${pkgs.rclone}/bin/rclone bisync googledrive: "$HOME" --include "/passwords.kdbx" \
-	              --resilient --recover --max-lock 2m --conflict-resolve newer --verbose''
+            ''set -a; . "$HOME/secrets.env"; set +a; exec ${passwordsSync}''
           ];
           RunAtLoad = true;
           StartInterval = 300;
@@ -129,7 +138,7 @@
         home-manager.nixosModules.home-manager
       ];
 
-      nix.settings.experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+      nix.settings.experimental-features = experimental-features;
 
       nixpkgs.config.allowUnfree = true;
 
@@ -161,7 +170,11 @@
         useGlobalPkgs = true;
         useUserPackages = true;
         backupFileExtension = "backup";
-        users.jeremiah = home;
+        users.jeremiah = {
+          imports = [ home ];
+          services.ssh-agent.enable = true;
+          systemd.user.sessionVariables.SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/ssh-agent";
+        };
       };
 
       services.displayManager.sddm.enable = true;
@@ -181,6 +194,19 @@
       programs.firefox.enable = true;
     };
   in {
+    homeConfigurations."jeremiah@ubuntu" = home-manager.lib.homeManagerConfiguration {
+      pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
+
+      modules = [
+        home
+        {
+          targets.genericLinux.enable = true;
+          home.username = "jeremiah";
+          home.homeDirectory = "/home/jeremiah";
+        }
+      ];
+    };
+
     nixosConfigurations.desktop2019 = nixpkgs.lib.nixosSystem {
       modules = [
         nixos

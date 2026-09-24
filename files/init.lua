@@ -26,6 +26,8 @@ vim.opt.termguicolors = true
 vim.opt.updatetime = 50
 vim.opt.wrap = false
 
+vim.opt.diffopt:append('linematch:60')
+
 vim.opt.autowrite = true
 vim.opt.makeprg = 'jk_build'
 vim.cmd([[set errorformat+=%\\s%#modified:%\\s%#%f,]])
