@@ -40,6 +40,7 @@
         claude-code
         fzf
         git
+        pkgs.home-manager
         keepassxc
         ripgrep
         tmux
