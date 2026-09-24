@@ -17,17 +17,15 @@
     home = { pkgs, lib, ... }: {
       home.stateVersion = "26.05";
 
-      programs.neovim = {
-        enable = true;
-        defaultEditor = true;
-        initLua = builtins.readFile ./files/init.lua;
-      };
       home.packages = with pkgs; [
-	tmux
         alacritty
+        clang-tools
         claude-code
+        fzf
         git
         keepassxc
+        ripgrep
+        tmux
         wl-clipboard
       ];
 
@@ -44,6 +42,37 @@
         ".tmux-linux.conf".source = ./files/.tmux-linux.conf;
         ".tmux-macos.conf".source = ./files/.tmux-macos.conf;
         ".zprofile".source = ./files/.zprofile;
+      };
+
+      programs.neovim = {
+        enable = true;
+        defaultEditor = true;
+        initLua = builtins.readFile ./files/init.lua;
+        plugins = with pkgs.vimPlugins; [
+          (pkgs.vimUtils.buildVimPlugin {
+            name = "jkellick-one-dark-vim";
+            src = pkgs.fetchFromGitHub {
+              owner = "jeremiahkellick";
+              repo = "jkellick-one-dark-vim";
+              rev = "64dda0e293db18ca9b650c7326c1b0070cc01316";
+              hash = "sha256-6mtSLJEER/jjyasBR09QpmP9AyD1CmLpe04w+E5lkqM=";
+            };
+          })
+          blink-cmp
+          fzf-lua
+          gitsigns-nvim
+          luasnip
+          nvim-lspconfig
+          (nvim-treesitter.withPlugins (p: with p; [ c cpp lua objc query vim vimdoc ]))
+          nvim-treesitter-textobjects
+          undotree
+          vim-fugitive
+          vim-repeat
+          vim-sleuth
+          vim-surround
+          vim-tmux-navigator
+          vim-unimpaired
+        ];
       };
 
       # Synchronize passwords.kdbx
