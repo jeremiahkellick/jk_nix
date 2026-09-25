@@ -10,8 +10,8 @@ output * bg #181a1f solid_color
 output "ViewSonic Corporation XG2402 SERIES V4K191902454" pos 0 0
 output "LG Electronics LG ULTRAGEAR 106MXQAB2564" pos 1920 0
 
-output "LG Electronics LG ULTRAFINE 602RMLM4L704" scale 1.25 pos    0 0
-output "LG Electronics LG ULTRAFINE 602RMDZ4L730" scale 1.25 pos 3072 0
+output "LG Electronics LG ULTRAFINE 602RMLM4L704" scale 1.375 pos    0 0
+output "LG Electronics LG ULTRAFINE 602RMDZ4L730" scale 1.375 pos 2793 0
 
 bindswitch --locked lid:on output "BOE 0x0B99 Unknown" disable
 bindswitch --locked lid:off output "BOE 0x0B99 Unknown" enable
@@ -45,11 +45,11 @@ bindsym $mod+shift+x exec swaylock -f -c 000000
 bindsym $mod+shift+c reload
 bindsym $mod+shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
 
-# Focus (vim-style, matches vim-tmux-navigator muscle memory)
-bindsym $mod+h focus left
-bindsym $mod+j focus down
-bindsym $mod+k focus up
-bindsym $mod+l focus right
+# Focus
+bindsym $mod+h exec nvim-sway left
+bindsym $mod+j exec nvim-sway down
+bindsym $mod+k exec nvim-sway up
+bindsym $mod+l exec nvim-sway right
 
 # Move windows
 bindsym $mod+shift+h move left

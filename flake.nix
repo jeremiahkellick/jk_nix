@@ -42,6 +42,7 @@
         git
         pkgs.home-manager
         keepassxc
+        libqalculate
         ripgrep
         tmux
         wl-clipboard
@@ -149,6 +150,26 @@
         subPackages = [ "cmd/sway-yasm" ];
         patches = [ ./patches/sway-yasm-title-events.patch ]; # gets it to listen to title changes
       };
+
+      # Lets $mod+hjkl move between both sway windows and neovim splits
+      nvimSway = pkgs.stdenv.mkDerivation {
+        pname = "nvim-sway";
+        version = "0.2.2";
+        src = pkgs.fetchFromGitHub {
+          owner = "cjab";
+          repo = "nvim-sway";
+          rev = "8a7f1aeb2b78d454d7cd47c6edda43fb11a35525";
+          hash = "sha256-wLOMj/KEI5srAQy4oBsuUBkm2nTtLcgY8p9DAbClpU4=";
+        };
+        nativeBuildInputs = [ pkgs.pkg-config ];
+        buildInputs = [ pkgs.cjson pkgs.msgpack-c ];
+        installPhase = ''
+          mkdir -p $out/bin
+          cp nvim-sway $out/bin/
+          mkdir -p $out/share
+          cp -r man $out/share/
+        '';
+      };
     in {
       imports = [
         home-manager.nixosModules.home-manager
@@ -204,6 +225,7 @@
           home.packages = with pkgs; [
             foot
             jq
+            nvimSway
             swayYasm clipman
             swayidle
             swaylock
