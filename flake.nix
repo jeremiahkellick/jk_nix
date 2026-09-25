@@ -134,7 +134,21 @@
       };
     };
 
-    nixos = { pkgs, lib, ... }: {
+    nixos = { pkgs, lib, ... }: let
+      # MRU and fuzzy-find switching
+      swayYasm = pkgs.buildGoModule {
+        pname = "sway-yasm";
+        version = "35828bcc70e5bd12562fab84fbdc7040b502b73a";
+        src = pkgs.fetchFromGitHub {
+          owner = "pancsta";
+          repo = "sway-yasm";
+          rev = "35828bcc70e5bd12562fab84fbdc7040b502b73a";
+          hash = "sha256-KlnuHRGGVT7pG6NqYN6pu3hEB/c11huzqZ3U4MfEH/I=";
+        };
+        vendorHash = "sha256-s06eql0H3tBQY5ApwRpXNijjIM1tOcPfpZZgBEBJqQs=";
+        subPackages = [ "cmd/sway-yasm" ];
+      };
+    in {
       imports = [
         home-manager.nixosModules.home-manager
       ];
@@ -175,11 +189,30 @@
           imports = [ home ];
           services.ssh-agent.enable = true;
           systemd.user.sessionVariables.SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/ssh-agent";
+
+          home.packages = with pkgs; [
+            foot
+            networkmanagerapplet
+            swayYasm clipman
+            swayidle
+            swaylock
+            waybar
+          ];
+          home.file = {
+            ".config/foot/foot.ini".source = ./files/foot.ini;
+            ".config/sway/config".source = ./files/sway_config;
+          };
         };
       };
 
-      services.displayManager.sddm.enable = true;
-      services.desktopManager.plasma6.enable = true;
+      services.greetd = {
+        enable = true;
+        useTextGreeter = true;
+        settings.default_session.command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd sway";
+      };
+      programs.sway = { enable = true; wrapperFeatures.gtk = true; };
+      xdg.portal = { enable = true; wlr.enable = true; };
+      security.pam.services.swaylock = {};
 
       services.pulseaudio.enable = false;
       security.rtkit.enable = true;

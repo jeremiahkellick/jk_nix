@@ -1,0 +1,95 @@
+set $mod Mod4
+set $term foot
+
+font pango:Inconsolata 10
+
+output * bg #181a1f solid_color
+
+output "ViewSonic Corporation XG2402 SERIES V4K191902454" pos 0 0
+output "LG Electronics LG ULTRAGEAR 106MXQAB2564" pos 1920 0
+
+exec waybar
+exec nm-applet --indicator
+exec sway-yasm daemon
+exec swayidle -w \
+    timeout 600 'swaylock -f -c 000000' \
+    timeout 900 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
+    timeout 1200 'systemctl suspend' \
+    before-sleep 'swaylock -f -c 000000'
+
+# Terminal / launcher / kill
+bindsym $mod+Return exec $term
+bindsym $mod+d exec sway-yasm path
+bindsym $mod+shift+q kill
+
+# sway-yasm: MRU window switcher, workspace/window pickers, clipboard history
+bindsym alt+tab exec sway-yasm switcher
+bindsym $mod+o exec sway-yasm pick-space
+bindsym $mod+p exec sway-yasm pick-win
+bindsym $mod+alt+c exec sway-yasm clipboard
+
+# Lock / reload / exit
+bindsym $mod+shift+x exec swaylock -f -c 000000
+bindsym $mod+shift+c reload
+bindsym $mod+shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
+
+# Focus (vim-style, matches vim-tmux-navigator muscle memory)
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+# Move windows
+bindsym $mod+shift+h move left
+bindsym $mod+shift+j move down
+bindsym $mod+shift+k move up
+bindsym $mod+shift+l move right
+
+# Layout
+bindsym $mod+v splith
+bindsym $mod+shift+v splitv
+bindsym $mod+f fullscreen
+bindsym $mod+shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+
+# Workspaces
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+bindsym $mod+0 workspace number 10
+
+# Uses sway-yasm's win-to-space rather than sway's own "move container to
+# workspace" so its MRU tracking stays accurate (plain IPC move commands
+# don't emit the blur event it relies on).
+bindsym $mod+shift+1 exec sway-yasm win-to-space 1
+bindsym $mod+shift+2 exec sway-yasm win-to-space 2
+bindsym $mod+shift+3 exec sway-yasm win-to-space 3
+bindsym $mod+shift+4 exec sway-yasm win-to-space 4
+bindsym $mod+shift+5 exec sway-yasm win-to-space 5
+bindsym $mod+shift+6 exec sway-yasm win-to-space 6
+bindsym $mod+shift+7 exec sway-yasm win-to-space 7
+bindsym $mod+shift+8 exec sway-yasm win-to-space 8
+bindsym $mod+shift+9 exec sway-yasm win-to-space 9
+bindsym $mod+shift+0 exec sway-yasm win-to-space 10
+
+# Resize mode
+bindsym $mod+r mode "resize"
+mode "resize" {
+    bindsym h resize shrink width 10px
+    bindsym j resize grow height 10px
+    bindsym k resize shrink height 10px
+    bindsym l resize grow width 10px
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+# Media / volume keys (pipewire via wireplumber)
+bindsym XF86AudioRaiseVolume exec wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle

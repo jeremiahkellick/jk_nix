@@ -58,6 +58,18 @@ else # bash only
         PS1='\[\033[0;32m\]\u@\h \[\033[0;34m\]\w$(__git_ps1 " (%s)") \$\[\e[00m\] '
     fi
 
+    if [ -z "$TMUX" ]; then
+        # Set the terminal title to the running program's name
+        __set_title() {
+            case "$BASH_COMMAND" in
+                __set_title*) return ;;
+            esac
+            printf '\033]0;%s\007' "${BASH_COMMAND%% *}"
+        }
+        trap '__set_title' DEBUG
+        PROMPT_COMMAND='printf "\033]0;%s\007" "${SHELL##*/}"'
+    fi
+
     # enable programmable completion features (you don't need to enable
     # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
     # sources /etc/bash.bashrc).
