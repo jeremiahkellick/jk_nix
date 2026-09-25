@@ -18,7 +18,7 @@ exec swayidle -w \
     before-sleep 'swaylock -f -c 000000'
 
 # Terminal / launcher / kill
-bindsym $mod+Return exec $term
+bindsym $mod+Return exec sh ~/.config/sway/term.sh
 bindsym $mod+d exec sway-yasm path
 bindsym $mod+shift+q kill
 

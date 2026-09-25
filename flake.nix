@@ -147,6 +147,7 @@
         };
         vendorHash = "sha256-s06eql0H3tBQY5ApwRpXNijjIM1tOcPfpZZgBEBJqQs=";
         subPackages = [ "cmd/sway-yasm" ];
+        patches = [ ./patches/sway-yasm-title-events.patch ]; # gets it to listen to title changes
       };
     in {
       imports = [
@@ -192,6 +193,7 @@
 
           home.packages = with pkgs; [
             foot
+            jq
             networkmanagerapplet
             swayYasm clipman
             swayidle
@@ -200,7 +202,8 @@
           ];
           home.file = {
             ".config/foot/foot.ini".source = ./files/foot.ini;
-            ".config/sway/config".source = ./files/sway_config;
+            ".config/sway/config".source = ./files/sway/config;
+            ".config/sway/term.sh".source = ./files/sway/term.sh;
           };
         };
       };

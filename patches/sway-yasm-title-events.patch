@@ -1,0 +1,36 @@
+diff --git a/internal/daemon/daemon.go b/internal/daemon/daemon.go
+index 7e42323..74cffc7 100644
+--- a/internal/daemon/daemon.go
++++ b/internal/daemon/daemon.go
+@@ -175,6 +175,9 @@ func (d *Daemon) Start() {
+ 			if event.Change == "close" {
+ 				d.onClose(&event.Container)
+ 			}
++			if event.Change == "title" {
++				d.onTitle(&event.Container)
++			}
+ 
+ 		case err := <-s.Errors:
+ 			// TODO reconnect / backoff
+@@ -420,6 +423,21 @@ func (d *Daemon) onFocus(event string, con *ipc.Container) {
+ 	}
+ }
+ 
++// onTitle refreshes a tracked window's cached title without touching MRU
++// order, since unlike onFocus this fires on every keystroke that changes a
++// title (e.g. shell prompts that show the running command), not just on
++// actual focus changes.
++func (d *Daemon) onTitle(con *ipc.Container) {
++	id := strconv.Itoa(con.ID)
++	data, ok := d.winData[id]
++	if !ok {
++		return
++	}
++
++	data.Title = con.Name
++	d.winData[id] = data
++}
++
+ func (d *Daemon) FocusedWindow() types.WindowData {
+ 	if len(d.winFocus) < 1 {
+ 		return types.WindowData{}
