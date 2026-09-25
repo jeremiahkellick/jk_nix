@@ -112,7 +112,7 @@
         Unit = { Requires = [ "rclone-config.service" ]; After = [ "rclone-config.service" ]; };
         Service = {
           Type = "oneshot";
-          EnvironmentFile = "%h/secrets.env";
+          EnvironmentFile = "%h/.secrets.env";
           ExecStart = "${passwordsSync}";
         };
       };
@@ -126,7 +126,7 @@
         config = {
           ProgramArguments = [
             "/bin/sh" "-c"
-            ''set -a; . "$HOME/secrets.env"; set +a; exec ${passwordsSync}''
+            ''set -a; . "$HOME/.secrets.env"; set +a; exec ${passwordsSync}''
           ];
           RunAtLoad = true;
           StartInterval = 300;
@@ -191,10 +191,19 @@
           services.ssh-agent.enable = true;
           systemd.user.sessionVariables.SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/ssh-agent";
 
+          systemd.user.services.sway-yasm = {
+            Unit.Description = "sway-yasm daemon";
+            Service = {
+              ExecStart = "${swayYasm}/bin/sway-yasm daemon --autoconfig=false";
+              Environment = "YASM_LOG=1";
+              Restart = "on-failure";
+              RestartSec = 1;
+            };
+          };
+
           home.packages = with pkgs; [
             foot
             jq
-            networkmanagerapplet
             swayYasm clipman
             swayidle
             swaylock
@@ -249,6 +258,13 @@
         nixos
         ./desktop2019/configuration.nix
         lanzaboote.nixosModules.lanzaboote
+      ];
+    };
+
+    nixosConfigurations.jk-laptop = nixpkgs.lib.nixosSystem {
+      modules = [
+        nixos
+        ./jk-laptop/configuration.nix
       ];
     };
   };
