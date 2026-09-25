@@ -10,8 +10,8 @@ output * bg #181a1f solid_color
 output "ViewSonic Corporation XG2402 SERIES V4K191902454" pos 0 0
 output "LG Electronics LG ULTRAGEAR 106MXQAB2564" pos 1920 0
 
-output "LG Electronics LG ULTRAFINE 606NTJJG8572" scale 1.25 pos    0 0
-output "LG Electronics LG ULTRAFINE 606NTGYG8583" scale 1.25 pos 3072 0
+output "LG Electronics LG ULTRAFINE 602RMLM4L704" scale 1.25 pos    0 0
+output "LG Electronics LG ULTRAFINE 602RMDZ4L730" scale 1.25 pos 3072 0
 
 bindswitch --locked lid:on output "BOE 0x0B99 Unknown" disable
 bindswitch --locked lid:off output "BOE 0x0B99 Unknown" enable
