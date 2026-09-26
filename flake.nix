@@ -2,18 +2,23 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
+    home-manager = {
+      url = "github:nix-community/home-manager/release-26.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     lanzaboote = {
       url = "github:nix-community/lanzaboote/v1.1.0";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    home-manager = {
-      url = "github:nix-community/home-manager/release-26.05";
+    nixos-wsl = {
+      url = "github:nix-community/NixOS-WSL/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { nixpkgs, lanzaboote, home-manager, ... }: let
+  outputs = { nixpkgs, home-manager, lanzaboote, nixos-wsl, ... }: let
     experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
 
     home = { pkgs, lib, ... }: let
@@ -135,7 +140,50 @@
       };
     };
 
-    nixos = { pkgs, lib, ... }: let
+    nixosBase = { pkgs, ... }: {
+      imports = [
+        home-manager.nixosModules.home-manager
+      ];
+
+      nix.settings.experimental-features = experimental-features;
+
+      nixpkgs.config.allowUnfree = true;
+
+      networking.networkmanager.enable = true;
+      time.timeZone = "America/Denver";
+      i18n.defaultLocale = "en_US.UTF-8";
+      i18n.extraLocaleSettings = {
+        LC_ADDRESS = "en_US.UTF-8";
+        LC_IDENTIFICATION = "en_US.UTF-8";
+        LC_MEASUREMENT = "en_US.UTF-8";
+        LC_MONETARY = "en_US.UTF-8";
+        LC_NAME = "en_US.UTF-8";
+        LC_NUMERIC = "en_US.UTF-8";
+        LC_PAPER = "en_US.UTF-8";
+        LC_TELEPHONE = "en_US.UTF-8";
+        LC_TIME = "en_US.UTF-8";
+      };
+      users.users."jeremiah" = {
+        isNormalUser = true;
+        description = "Jeremiah";
+        extraGroups = [ "networkmanager" "wheel" ];
+        packages = with pkgs; [
+          # packages for only this user
+        ];
+      };
+      home-manager = {
+        useGlobalPkgs = true;
+        useUserPackages = true;
+        backupFileExtension = "backup";
+        users.jeremiah = {
+          imports = [ home ];
+          services.ssh-agent.enable = true;
+          systemd.user.sessionVariables.SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/ssh-agent";
+        };
+      };
+    };
+
+    nixosGraphical = { pkgs, ... }: let
       # MRU and fuzzy-find switching
       swayYasm = pkgs.buildGoModule {
         pname = "sway-yasm";
@@ -171,47 +219,13 @@
         '';
       };
     in {
-      imports = [
-        home-manager.nixosModules.home-manager
-      ];
+      imports = [ nixosBase ];
 
-      nix.settings.experimental-features = experimental-features;
-
-      nixpkgs.config.allowUnfree = true;
-
-      boot.loader.systemd-boot.enable = lib.mkDefault true;
+      boot.loader.systemd-boot.enable = true;
       boot.loader.efi.canTouchEfiVariables = true;
-      networking.networkmanager.enable = true;
-      time.timeZone = "America/Denver";
-      i18n.defaultLocale = "en_US.UTF-8";
-      i18n.extraLocaleSettings = {
-        LC_ADDRESS = "en_US.UTF-8";
-        LC_IDENTIFICATION = "en_US.UTF-8";
-        LC_MEASUREMENT = "en_US.UTF-8";
-        LC_MONETARY = "en_US.UTF-8";
-        LC_NAME = "en_US.UTF-8";
-        LC_NUMERIC = "en_US.UTF-8";
-        LC_PAPER = "en_US.UTF-8";
-        LC_TELEPHONE = "en_US.UTF-8";
-        LC_TIME = "en_US.UTF-8";
-      };
-      users.users."jeremiah" = {
-        isNormalUser = true;
-        description = "Jeremiah";
-        extraGroups = [ "networkmanager" "wheel" ];
-        packages = with pkgs; [
-          # packages for only this user
-        ];
-      };
-      home-manager = {
-        useGlobalPkgs = true;
-        useUserPackages = true;
-        backupFileExtension = "backup";
-        users.jeremiah = {
-          imports = [ home ];
-          services.ssh-agent.enable = true;
-          systemd.user.sessionVariables.SSH_AUTH_SOCK = "\${XDG_RUNTIME_DIR}/ssh-agent";
 
+      home-manager = {
+        users.jeremiah = {
           systemd.user.services.sway-yasm = {
             Unit.Description = "sway-yasm daemon";
             Service = {
@@ -277,7 +291,7 @@
 
     nixosConfigurations.desktop2019 = nixpkgs.lib.nixosSystem {
       modules = [
-        nixos
+        nixosGraphical
         ./desktop2019/configuration.nix
         lanzaboote.nixosModules.lanzaboote
       ];
@@ -285,8 +299,21 @@
 
     nixosConfigurations.jk-laptop = nixpkgs.lib.nixosSystem {
       modules = [
-        nixos
+        nixosGraphical
         ./jk-laptop/configuration.nix
+      ];
+    };
+
+    nixosConfigurations.desktop2019-wsl = nixpkgs.lib.nixosSystem {
+      system = "x86_64-linux";
+      modules = [
+        nixos-wsl.nixosModules.default
+        nixosBase
+        {
+          wsl.enable = true;
+          wsl.defaultUser = "jeremiah";
+          system.stateVersion = "26.05";
+        }
       ];
     };
   };
