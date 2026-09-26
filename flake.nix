@@ -21,6 +21,34 @@
   outputs = { nixpkgs, home-manager, lanzaboote, nixos-wsl, ... }: let
     experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
 
+    treesitterPlugins = p: with p; [ c cpp lua objc query vim vimdoc ];
+
+    nvimPlugins = pkgs: p: with p; [
+      (pkgs.vimUtils.buildVimPlugin {
+        name = "jkellick-one-dark-vim";
+        src = pkgs.fetchFromGitHub {
+          owner = "jeremiahkellick";
+          repo = "jkellick-one-dark-vim";
+          rev = "64dda0e293db18ca9b650c7326c1b0070cc01316";
+          hash = "sha256-6mtSLJEER/jjyasBR09QpmP9AyD1CmLpe04w+E5lkqM=";
+        };
+      })
+      blink-cmp
+      fzf-lua
+      gitsigns-nvim
+      luasnip
+      nvim-lspconfig
+      nvim-treesitter
+      nvim-treesitter-textobjects
+      undotree
+      vim-fugitive
+      vim-repeat
+      vim-sleuth
+      vim-surround
+      vim-tmux-navigator
+      vim-unimpaired
+    ];
+
     home = { pkgs, lib, ... }: let
       passwordsSync = pkgs.writeShellScript "passwords-sync" ''
         set -euo pipefail
@@ -76,31 +104,9 @@
         enable = true;
         defaultEditor = true;
         initLua = builtins.readFile ./files/init.lua;
-        plugins = with pkgs.vimPlugins; [
-          (pkgs.vimUtils.buildVimPlugin {
-            name = "jkellick-one-dark-vim";
-            src = pkgs.fetchFromGitHub {
-              owner = "jeremiahkellick";
-              repo = "jkellick-one-dark-vim";
-              rev = "64dda0e293db18ca9b650c7326c1b0070cc01316";
-              hash = "sha256-6mtSLJEER/jjyasBR09QpmP9AyD1CmLpe04w+E5lkqM=";
-            };
-          })
-          blink-cmp
-          fzf-lua
-          gitsigns-nvim
-          luasnip
-          nvim-lspconfig
-          (nvim-treesitter.withPlugins (p: with p; [ c cpp lua objc query vim vimdoc ]))
-          nvim-treesitter-textobjects
-          undotree
-          vim-fugitive
-          vim-repeat
-          vim-sleuth
-          vim-surround
-          vim-tmux-navigator
-          vim-unimpaired
-        ];
+        plugins = nvimPlugins pkgs (pkgs.vimPlugins // {
+          nvim-treesitter = pkgs.vimPlugins.nvim-treesitter.withPlugins treesitterPlugins;
+        });
       };
 
       programs.ssh = {
@@ -183,7 +189,7 @@
       };
     };
 
-    nixosGraphical = { pkgs, ... }: let
+    nixosGraphical = { pkgs, lib, ... }: let
       # MRU and fuzzy-find switching
       swayYasm = pkgs.buildGoModule {
         pname = "sway-yasm";
@@ -221,7 +227,7 @@
     in {
       imports = [ nixosBase ];
 
-      boot.loader.systemd-boot.enable = true;
+      boot.loader.systemd-boot.enable = lib.mkDefault true;
       boot.loader.efi.canTouchEfiVariables = true;
 
       home-manager = {
@@ -276,6 +282,91 @@
       programs.firefox.enable = true;
     };
   in {
+    packages.x86_64-linux.nvim-windows = let
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+
+        # override to fix `mv: cannot stat 'parser': No such file or directory`
+        # caused by mingw gcc appending .exe to output file names
+        overlays = [(final: prev: {
+          tree-sitter = prev.tree-sitter // {
+            buildGrammar = args: (prev.tree-sitter.buildGrammar args).overrideAttrs (old: {
+              postBuild = (old.postBuild or "") + ''
+                if [ -e parser.exe ]; then mv parser.exe parser; fi
+              '';
+            });
+          };
+        })];
+      };
+
+      mingw = pkgs.pkgsCross.mingwW64;
+
+      nvim = pkgs.fetchzip {
+        url = "https://github.com/neovim/neovim/releases/download/"
+          + "v${pkgs.neovim-unwrapped.version}/nvim-win64.zip";
+        hash = "sha256-NHFBLVtejb09eJChSeFG7CALxQoBuWbAOGSs/Wj3eGw=";
+      };
+
+      vimPlugins = pkgs.vimPlugins // {
+        blink-cmp = pkgs.vimPlugins.blink-cmp.overrideAttrs (old: {
+          nvimSkipModules = old.nvimSkipModules ++ [ "blink.cmp.fuzzy.rust.init" ];
+          preInstall = ''
+            mkdir -p target/release
+            ln -s ${pkgs.fetchurl {
+              url = "https://github.com/Saghen/blink.cmp/releases/download/"
+                + "v${pkgs.vimPlugins.blink-cmp.version}/x86_64-pc-windows-msvc.dll";
+              hash = "sha256-hpeatnZXOlHVYkWDISbKNDtZHk976SyG00PqtA/odd4=";
+            }} target/release/libblink_cmp_fuzzy.dll
+          '';
+        });
+
+        nvim-treesitter = mingw.vimPlugins.nvim-treesitter.withPlugins treesitterPlugins;
+      };
+
+      packDir = pkgs.vimUtils.packDir { hm.start = nvimPlugins pkgs vimPlugins; };
+
+      fzfWin = pkgs.fetchzip {
+        url = "https://github.com/junegunn/fzf/releases/download/"
+          + "v${pkgs.fzf.version}/fzf-${pkgs.fzf.version}-windows_amd64.zip";
+        hash = "sha256-I3qFqrpu7XdOmR8Xo1VS0pd+8tXIiDTbhMw33C5DYoM=";
+        stripRoot = false;
+      };
+
+      bundle = pkgs.runCommand "nvim-windows-bundle" { } ''
+        mkdir -p $out/nvim $out/bin
+        cp -rL ${nvim}/. $out/nvim/
+        cp -rL ${packDir}/pack $out/pack
+        cp ${./files/init.lua} $out/init.lua
+
+        cp ${mingw.ripgrep}/bin/rg.exe $out/bin/
+        cp ${mingw.pcre2.bin}/bin/libpcre2-8-0.dll $out/bin/
+        cp ${fzfWin}/fzf.exe $out/bin/
+
+        chmod -R u+w $out
+
+        # Forward slashes and escaped spaces because `set` treats a backslash as
+        # an escape and an unescaped space as the end of the value.
+        cat > $out/nvim.cmd <<'EOF'
+        @echo off
+        setlocal
+        set "BUNDLE=%~dp0"
+        set "BUNDLE=%BUNDLE:\=/%"
+        set "BUNDLE=%BUNDLE: =\ %"
+        set "PATH=%~dp0bin;%PATH%"
+        "%~dp0nvim\bin\nvim.exe" -u "%~dp0init.lua" --cmd "set packpath^=%BUNDLE%" %*
+        EOF
+        sed -i 's/^        //; s/$/\r/' $out/nvim.cmd
+      '';
+    in pkgs.runCommand "nvim-windows" { nativeBuildInputs = [ pkgs.zip ]; } ''
+      cp -r ${bundle} nvim-windows
+      chmod -R u+w nvim-windows
+      # static timestamps so we don't invalidate the hash
+      find nvim-windows -exec touch -t 198001010000 {} +
+      mkdir -p $out
+      zip -qrX $out/nvim-windows.zip nvim-windows
+    '';
+
     homeConfigurations."jeremiah@ubuntu" = home-manager.lib.homeManagerConfiguration {
       pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
 
