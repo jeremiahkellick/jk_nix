@@ -13,6 +13,14 @@ output "LG Electronics LG ULTRAGEAR 106MXQAB2564" pos 1920 0
 output "LG Electronics LG ULTRAFINE 602RMLM4L704" scale 1.375 pos    0 0
 output "LG Electronics LG ULTRAFINE 602RMDZ4L730" scale 1.375 pos 2793 0
 
+workspace 9 output \
+        "LG Electronics LG ULTRAFINE 602RMLM4L704" \
+        "ViewSonic Corporation XG2402 SERIES V4K191902454"
+
+workspace 1 output \
+        "LG Electronics LG ULTRAFINE 602RMDZ4L730" \
+        "LG Electronics LG ULTRAGEAR 106MXQAB2564"
+
 bindswitch --locked lid:on output "BOE 0x0B99 Unknown" disable
 bindswitch --locked lid:off output "BOE 0x0B99 Unknown" enable
 
