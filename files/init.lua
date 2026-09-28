@@ -281,21 +281,17 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
         vim.keymap.set('n', 'gs', vim.lsp.buf.signature_help, opts)
         vim.keymap.set('n', '<F2>', vim.lsp.buf.rename, opts)
-        vim.keymap.set('n', '<F3>', function() vim.lsp.buf.format({async = true}) end, opts)
+        local function format_file()
+            vim.lsp.buf.format({async = true})
+        end
+        vim.keymap.set('n', '<F3>', format_file, opts)
+        vim.keymap.set('n', '<leader>f', format_file, opts)
         local function format_range_and_exit()
             vim.lsp.buf.format({async = true})
             vim.cmd('normal! \27')
         end
         vim.keymap.set('v', '<F3>', format_range_and_exit, opts)
         vim.keymap.set('v', '<leader>f', format_range_and_exit, opts)
-        vim.keymap.set('n', 'f', function()
-            vim.o.operatorfunc = 'v:lua.FormatRangeOperator'
-            return 'g@'
-        end, vim.tbl_extend('force', opts, {expr = true}))
-        vim.keymap.set('n', 'ff', function()
-            vim.o.operatorfunc = 'v:lua.FormatRangeOperator'
-            return 'g@_'
-        end, vim.tbl_extend('force', opts, {expr = true}))
         vim.keymap.set({'n', 'x'}, '<F4>', vim.lsp.buf.code_action, opts)
     end,
 })

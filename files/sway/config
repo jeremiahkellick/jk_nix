@@ -33,6 +33,7 @@ exec swayidle -w \
 bindsym $mod+Return exec sh ~/.config/sway/term.sh
 bindsym $mod+d exec sway-yasm path
 bindsym $mod+shift+q kill
+bindsym $mod+semicolon kill
 
 # sway-yasm: MRU window switcher, workspace/window pickers, clipboard history
 bindsym alt+tab exec sway-yasm switcher
@@ -76,19 +77,16 @@ bindsym $mod+8 workspace number 8
 bindsym $mod+9 workspace number 9
 bindsym $mod+0 workspace number 10
 
-# Uses sway-yasm's win-to-space rather than sway's own "move container to
-# workspace" so its MRU tracking stays accurate (plain IPC move commands
-# don't emit the blur event it relies on).
-bindsym $mod+shift+1 exec sway-yasm win-to-space 1
-bindsym $mod+shift+2 exec sway-yasm win-to-space 2
-bindsym $mod+shift+3 exec sway-yasm win-to-space 3
-bindsym $mod+shift+4 exec sway-yasm win-to-space 4
-bindsym $mod+shift+5 exec sway-yasm win-to-space 5
-bindsym $mod+shift+6 exec sway-yasm win-to-space 6
-bindsym $mod+shift+7 exec sway-yasm win-to-space 7
-bindsym $mod+shift+8 exec sway-yasm win-to-space 8
-bindsym $mod+shift+9 exec sway-yasm win-to-space 9
-bindsym $mod+shift+0 exec sway-yasm win-to-space 10
+bindsym $mod+shift+1 move container to workspace 1
+bindsym $mod+shift+2 move container to workspace 2
+bindsym $mod+shift+3 move container to workspace 3
+bindsym $mod+shift+4 move container to workspace 4
+bindsym $mod+shift+5 move container to workspace 5
+bindsym $mod+shift+6 move container to workspace 6
+bindsym $mod+shift+7 move container to workspace 7
+bindsym $mod+shift+8 move container to workspace 8
+bindsym $mod+shift+9 move container to workspace 9
+bindsym $mod+shift+0 move container to workspace 10
 
 # Resize mode
 bindsym $mod+r mode "resize"
