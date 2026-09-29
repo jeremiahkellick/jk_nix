@@ -244,6 +244,10 @@ vim.lsp.config('*', {
     capabilities = require('blink.cmp').get_lsp_capabilities(),
 })
 
+vim.lsp.config('clangd', {
+    cmd = {'clangd', '--header-insertion=never'},
+})
+
 vim.lsp.enable({'clangd'})
 
 -- Operator: <leader>f{motion} formats the resulting range, e.g. <leader>fi{,
