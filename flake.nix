@@ -156,6 +156,10 @@
       nixpkgs.config.allowUnfree = true;
 
       networking.networkmanager.enable = true;
+      networking.firewall.extraCommands = ''
+        iptables -w -A nixos-fw -p udp -d 238.46.104.0/24 -j nixos-fw-accept
+      '';
+
       time.timeZone = "America/Denver";
       i18n.defaultLocale = "en_US.UTF-8";
       i18n.extraLocaleSettings = {
