@@ -72,6 +72,7 @@
         clang-tools
         claude-code
         fzf
+        gdb
         git
         pkgs.home-manager
         keepassxc

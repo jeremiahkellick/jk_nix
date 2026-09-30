@@ -49,18 +49,17 @@ bindsym $mod+o exec sway-yasm pick-space
 bindsym $mod+p exec sway-yasm pick-win
 bindsym $mod+alt+c exec sway-yasm clipboard
 
-# Lock / reload / exit
 bindsym $mod+shift+x exec swaylock -f -c 000000
 bindsym $mod+shift+c reload
 bindsym $mod+shift+e exec swaynag -t warning -m 'Exit sway?' -B 'Yes' 'swaymsg exit'
 
-# Focus
+# Move focus
 bindsym $mod+h exec nvim-sway left
 bindsym $mod+j exec nvim-sway down
 bindsym $mod+k exec nvim-sway up
 bindsym $mod+l exec nvim-sway right
 
-# Move windows
+# Rearrange windows
 bindsym $mod+shift+h move left
 bindsym $mod+shift+j move down
 bindsym $mod+shift+k move up
