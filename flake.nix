@@ -29,8 +29,8 @@
         src = pkgs.fetchFromGitHub {
           owner = "jeremiahkellick";
           repo = "jkellick-one-dark-vim";
-          rev = "64dda0e293db18ca9b650c7326c1b0070cc01316";
-          hash = "sha256-6mtSLJEER/jjyasBR09QpmP9AyD1CmLpe04w+E5lkqM=";
+          rev = "77870cb75044fa22d0f2e030c1e494dd50b58bc4";
+          hash = "sha256-xGcD7sp8guLHmYyuTnHlQGoKfgEx/ww0TqVRcernYKY=";
         };
       })
       blink-cmp
@@ -91,6 +91,7 @@
       home.file = {
         ".alacritty.toml".source = ./files/.alacritty.toml;
         ".clang-format".source = ./files/.clang-format;
+        ".clangd".source = ./files/.clangd;
         ".git-completion.bash".source = ./files/.git-completion.bash;
         ".git-prompt.sh".source = ./files/.git-prompt.sh;
         ".gitconfig".source = ./files/.gitconfig;

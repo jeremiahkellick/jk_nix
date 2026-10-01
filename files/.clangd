@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-DSCEYE_BASE_IMPL]
