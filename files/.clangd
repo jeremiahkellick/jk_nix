@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-DSCEYE_BASE_IMPL]
+  Add: [-DSCEYE_BASE_IMPL, -Wno-macro-redefined]

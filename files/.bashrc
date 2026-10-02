@@ -111,6 +111,9 @@ psearch() {
     pids=$(pgrep -d, "$@") || return 1
     ps -o pid,ppid,comm,args -ww -p "$pids"
 }
+headers() {
+    nix build -o $HOME/NGA/.lsp-includes -L $HOME/NGA#default_headers
+}
 
 if [ -x /usr/bin/mint-fortune ]; then
     /usr/bin/mint-fortune
