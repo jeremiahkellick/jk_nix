@@ -2,6 +2,8 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
 
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -18,8 +20,17 @@
     };
   };
 
-  outputs = { nixpkgs, home-manager, lanzaboote, nixos-wsl, ... }: let
+  outputs = { nixpkgs, nixpkgs-unstable, home-manager, lanzaboote, nixos-wsl, ... }: let
     experimental-features = [ "nix-command" "flakes" "ca-derivations" ];
+
+    overlays = [
+      (final: prev: {
+         inherit (import nixpkgs-unstable {
+          inherit (prev.stdenv.hostPlatform) system;
+          inherit (prev) config;
+        }) claude-code; # packages to get from nixpkgs-unstable
+      })
+    ];
 
     treesitterPlugins = p: with p; [ c cpp lua objc query vim vimdoc ];
 
@@ -156,6 +167,7 @@
       nix.settings.experimental-features = experimental-features;
 
       nixpkgs.config.allowUnfree = true;
+      nixpkgs.overlays = overlays;
 
       networking.networkmanager.enable = true;
       networking.firewall.extraCommands = ''
@@ -374,7 +386,11 @@
     '';
 
     homeConfigurations."jeremiah@ubuntu" = home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs { system = "x86_64-linux"; config.allowUnfree = true; };
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        config.allowUnfree = true;
+        inherit overlays;
+      };
 
       modules = [
         home
