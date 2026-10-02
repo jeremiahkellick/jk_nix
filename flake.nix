@@ -390,6 +390,7 @@
       modules = [
         nixosGraphical
         ./desktop2019/configuration.nix
+        ./netextender.nix
         lanzaboote.nixosModules.lanzaboote
       ];
     };
@@ -398,6 +399,7 @@
       modules = [
         nixosGraphical
         ./jk-laptop/configuration.nix
+        ./netextender.nix
       ];
     };
 
