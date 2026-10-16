@@ -105,7 +105,9 @@ vim.keymap.set('n', '<C-u>', scroll_and_center('\21'))
 vim.keymap.set('n', '<C-d>', scroll_and_center('\4'))
 
 local ls = require('luasnip')
-vim.keymap.set({"i"}, "<C-l>", function() ls.expand() end, {silent = true})
+vim.keymap.set({"i"}, "<C-l>", function()
+    if ls.expandable() then ls.expand() end
+end, {silent = true})
 vim.keymap.set({"i", "s"}, "<C-j>", function() ls.jump(1) end, {silent = true})
 vim.keymap.set({"i", "s"}, "<C-k>", function() ls.jump(-1) end, {silent = true})
 
@@ -322,7 +324,7 @@ require('blink.cmp').setup({
 -- Snippets
 
 function typedef_snippet(keyword)
-    return ls.snippet({trig = keyword .. '%.(%w+)', regTrig = true}, {
+    return ls.snippet({trig = keyword .. '%.([%w_]+)', regTrig = true}, {
         ls.function_node(function(_, snip)
             return {'typedef ' .. keyword .. ' ' .. snip.captures[1] .. ' {', '\t'}
         end, {}),
