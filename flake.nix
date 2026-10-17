@@ -28,7 +28,7 @@
          inherit (import nixpkgs-unstable {
           inherit (prev.stdenv.hostPlatform) system;
           inherit (prev) config;
-        }) claude-code; # packages to get from nixpkgs-unstable
+        }) claude-code discord; # packages to get from nixpkgs-unstable
       })
     ];
 
@@ -223,6 +223,26 @@
         patches = [ ./patches/sway-yasm-title-events.patch ]; # gets it to listen to title changes
       };
 
+      radDebugger = pkgs.clangStdenv.mkDerivation {
+        pname = "raddebugger";
+        version = "0-unstable-2026-10-16";
+        src = pkgs.fetchFromGitHub {
+          owner = "EpicGames";
+          repo = "raddebugger";
+          rev = "c55a14f63474f522f00f2aabc9de66b68f202cca";
+          hash = "sha256-B4t3KXhSDGrEBqIfQZph7ouE+h74rz0F1C7OZ+hLwFA=";
+        };
+        nativeBuildInputs = [ pkgs.pkg-config ];
+        buildInputs = with pkgs; [ freetype libGL libxext libxfixes libxrandr ];
+        buildPhase = ''
+          patchShebangs build.sh
+          ./build.sh raddbg release
+        '';
+        installPhase = ''
+          install -Dm755 build/raddbg $out/bin/raddbg
+        '';
+      };
+
       # Lets $mod+hjkl move between both sway windows and neovim splits
       nvimSway = pkgs.stdenv.mkDerivation {
         pname = "nvim-sway";
@@ -264,6 +284,7 @@
             foot
             jq
             nvimSway
+            radDebugger
             swayYasm clipman
             swayidle
             swaylock
@@ -283,6 +304,7 @@
         settings.default_session.command = "${pkgs.tuigreet}/bin/tuigreet --time --cmd sway";
       };
       programs.sway = { enable = true; wrapperFeatures.gtk = true; };
+      environment.sessionVariables.NIXOS_OZONE_WL = "1";
       xdg.portal = { enable = true; wlr.enable = true; };
       security.pam.services.swaylock = {};
 

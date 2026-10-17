@@ -7,6 +7,7 @@
   boot.loader.systemd-boot.enable = false;
   boot.lanzaboote = { enable = true; pkiBundle = "/var/lib/sbctl"; };
   environment.systemPackages = with pkgs; [ sbctl ];
+  home-manager.users.jeremiah.home.packages = with pkgs; [ discord ];
 
   system.stateVersion = "26.05"; # Did you read the comment?
 }
