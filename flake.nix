@@ -28,7 +28,7 @@
          inherit (import nixpkgs-unstable {
           inherit (prev.stdenv.hostPlatform) system;
           inherit (prev) config;
-        }) claude-code discord; # packages to get from nixpkgs-unstable
+        }) claude-code discord firefox; # packages to get from nixpkgs-unstable
       })
     ];
 
