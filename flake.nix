@@ -65,7 +65,7 @@
         set -euo pipefail
         args=(
           googledrive: "$HOME" --include "/passwords.kdbx" --resilient --recover --max-lock 2m
-          --conflict-resolve newer --verbose
+          --conflict-resolve newer --verbose --force
         )
         if [ ! -e "$HOME/passwords.kdbx" ]; then
           args=(--resync "''${args[@]}")
@@ -89,6 +89,7 @@
         keepassxc
         libqalculate
         ripgrep
+        tcpdump
         tmux
         wl-clipboard
       ];
@@ -125,6 +126,7 @@
       programs.ssh = {
         enable = true;
         enableDefaultConfig = false;
+        includes = [ "~/.ssh/sceye_config" ];
         settings."*".AddKeysToAgent = "yes";
       };
 
@@ -171,7 +173,7 @@
 
       networking.networkmanager.enable = true;
       networking.firewall.extraCommands = ''
-        iptables -w -A nixos-fw -p udp -d 238.46.104.0/24 -j nixos-fw-accept
+        iptables -w -A nixos-fw -p udp -d 239.192.104.0/24 -j nixos-fw-accept
       '';
 
       time.timeZone = "America/Denver";
@@ -281,6 +283,7 @@
           };
 
           home.packages = with pkgs; [
+            anki
             foot
             jq
             nvimSway
@@ -317,9 +320,28 @@
         pulse.enable = true;
       };
 
+      hardware.bluetooth = {
+        enable = true;
+        powerOnBoot = true;
+      };
+
       services.printing.enable = true;
 
       programs.firefox.enable = true;
+
+      fonts.packages = with pkgs; [
+        inconsolata
+        noto-fonts
+        noto-fonts-cjk-sans
+        noto-fonts-cjk-serif
+        noto-fonts-color-emoji
+      ];
+      fonts.fontconfig.defaultFonts = {
+        monospace = [ "Inconsolata" "Noto Sans Mono CJK SC" ];
+        sansSerif = [ "Noto Sans" "Noto Sans CJK SC" ];
+        serif = [ "Noto Serif" "Noto Serif CJK SC" ];
+        emoji = [ "Noto Color Emoji" ];
+      };
     };
   in {
     packages.x86_64-linux.nvim-windows = let

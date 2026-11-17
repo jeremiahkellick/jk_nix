@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-DSCEYE_BASE_IMPL, -Wno-macro-redefined]
+  Add: [-DSCEYE_BASE_IMPL, -D_GNU_SOURCE, -Wno-macro-redefined]
