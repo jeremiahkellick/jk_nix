@@ -284,6 +284,7 @@
 
           home.packages = with pkgs; [
             anki
+            brightnessctl
             foot
             jq
             nvimSway
